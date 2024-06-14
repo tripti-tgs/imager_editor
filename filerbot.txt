@@ -1,0 +1,179 @@
+import React, { useEffect, useRef, useState } from "react";
+import ImageEditor from "tui-image-editor";
+import "tui-image-editor/dist/tui-image-editor.css";
+import { fabric } from "fabric"; // Import fabric here
+
+interface ImageEditorComponentProps {}
+
+const myTheme = {
+  // Your theme configuration
+};
+
+const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const editorInstanceRef = useRef<any>(null);
+  const [imageLoaded, setImageLoaded] = useState<boolean>(false);
+  const [arrowColor, setArrowColor] = useState<string>("red");
+  const [lineWidth, setLineWidth] = useState<number>(5);
+  const [arrows, setArrows] = useState<fabric.Line[]>([]);
+
+  useEffect(() => {
+    const initializeEditor = () => {
+      if (editorRef.current) {
+        editorInstanceRef.current = new ImageEditor(editorRef.current, {
+          includeUI: {
+            loadImage: {
+              path: "https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg",
+              name: "SampleImage",
+            },
+            theme: myTheme,
+            menu: [
+              "crop",
+              "flip",
+              "rotate",
+              "draw",
+              "shape",
+              "icon",
+              "text",
+              "mask",
+              "filter",
+            ],
+            initMenu: "",
+            uiSize: {
+              height: `700px`,
+              width: "100%",
+            },
+            menuBarPosition: "top",
+          },
+          cssMaxHeight: 500,
+          cssMaxWidth: 700,
+          selectionStyle: {
+            cornerSize: 20,
+            rotatingPointOffset: 70,
+          },
+          usageStatistics: false,
+        });
+
+        // Extend the TUI Image Editor with a new arrow function
+        editorInstanceRef.current.addArrow = function (x1: number, y1: number, x2: number, y2: number) {
+          const canvas = this._graphics?.getCanvas();
+          if (!canvas) {
+            console.error("Canvas not found!");
+            return;
+          }
+
+          const arrow = new fabric.Line([x1, y1, x2, y2], {
+            stroke: arrowColor,
+            strokeWidth: lineWidth,
+            selectable: true,
+            hasControls: true,
+            hasBorders: true,
+          });
+          const head = new fabric.Triangle({
+            fill: 'red',
+            left: x2,
+            top: y2,
+            originX: 'center',
+            originY: 'center',
+            angle: (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI,
+            width: 10,
+            height: 15,
+          });
+
+          canvas.add(arrow);
+          canvas.add(head);
+          canvas.renderAll();
+          setArrows([...arrows, arrow]);
+        };
+
+        const checkImageLoaded = () => {
+          if (editorInstanceRef.current && editorInstanceRef.current._graphics) {
+            const canvasImage = editorInstanceRef.current._graphics.getCanvasImage();
+            if (canvasImage) {
+              setImageLoaded(true);
+              clearInterval(imageLoadInterval);
+            }
+          }
+        };
+
+        const imageLoadInterval = setInterval(checkImageLoaded, 500);
+      }
+    };
+
+    initializeEditor();
+
+    return () => {
+      editorInstanceRef.current?.destroy?.();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (imageLoaded && editorInstanceRef.current) {
+      const downloadButton = document.querySelector(
+        ".tui-image-editor-download-btn"
+      );
+      if (downloadButton) {
+        downloadButton.addEventListener("click", handleCustomDownload);
+      }
+    }
+  }, [imageLoaded]);
+
+  const handleCustomDownload = () => {
+    if (editorInstanceRef.current) {
+      const dataURL = editorInstanceRef.current.toDataURL();
+      const link = document.createElement("a");
+      link.href = dataURL;
+      link.download = "image.png";
+      link.click();
+    }
+  };
+
+  const handleAddArrow = () => {
+    if (imageLoaded && editorInstanceRef.current) {
+      editorInstanceRef.current.addArrow(100, 100, 200, 200);
+    }
+  };
+
+  const handleRemoveArrow = () => {
+    if (arrows.length > 0) {
+      const updatedArrows = arrows.slice(0, -1);
+      setArrows(updatedArrows);
+      const canvas = editorInstanceRef.current._graphics?.getCanvas();
+      if (canvas) {
+        canvas.remove(arrows[arrows.length - 1]);
+        canvas.renderAll();
+      }
+    }
+  };
+
+  const handleColorChange = (color: string) => {
+    setArrowColor(color);
+  };
+
+  const handleLineWidthChange = (value: string) => {
+    setLineWidth(parseInt(value));
+  };
+
+  return (
+    <div>
+      <button onClick={handleAddArrow}>Add Arrow</button>
+      <button onClick={handleRemoveArrow}>Remove Last Arrow</button>
+      <input
+        type="color"
+        value={arrowColor}
+        onChange={(e) => handleColorChange(e.target.value)}
+      />
+      <input
+        type="range"
+        min="1"
+        max="10"
+        value={lineWidth}
+        onChange={(e) => handleLineWidthChange(e.target.value)}
+      />
+      <div ref={editorRef}></div>
+    </div>
+  );
+};
+
+export default TuiImageEditorComponent;
+

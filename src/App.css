@@ -1,0 +1,158 @@
+.navbar1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #333;
+  padding: 1rem;
+}
+
+.tui-image-editor-container .tui-image-editor-controls-logo img{
+ /* visibility: hidden !important; */
+ display: none !important;
+
+}
+.tui-image-editor-container .tui-image-editor-header-logo img{
+ /* visibility: hidden !important; */
+ display: none !important;
+
+
+}
+.tui-image-editor-container .tui-image-editor-controls {
+  background-color: transparent !important ;
+
+}
+.navbar-logo a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 2rem;
+}
+
+.navbar-links {
+  list-style: none;
+  display: flex;
+}
+
+.navbar-links li {
+  margin: 0 1rem;
+}
+
+.navbar-links a {
+  
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.5rem;
+}
+
+.navbar-links a:hover {
+  text-decoration: underline;
+}
+.e-image-editor {
+	margin: 0 auto;
+}
+
+.e-img-editor-sample {
+	height: 80vh;
+	width: 100%;
+}
+
+@media only screen and (max-width: 700px) {
+	.e-img-editor-sample {
+		height: 70vh;
+		width: 100%;
+	}
+}
+
+.control-wrapper {
+	height: 100%;
+  
+}
+
+.custom-button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-right: 8px;
+  margin-left: 5px;
+}
+.custom-shape .tui-shape-rect .tui-image-editor-icon {
+  background-image: url("https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Five-pointed_star.svg/800px-Five-pointed_star.svg.png");
+}
+.custom-button:hover {
+  background-color: #0056b3;
+}
+
+/* .tui-image-editor-help-menu {
+  margin-top: 100px;
+} */
+
+.tui-image-editor-container .tui-image-editor-controls-logo, .tui-image-editor-container .tui-image-editor-controls-buttons {
+  width: auto !important;
+  height: 100%;
+  display: none;
+
+}
+
+.tui-image-editor-container .tui-image-editor-header-buttons button, .tui-image-editor-container .tui-image-editor-header-buttons div, .tui-image-editor-container .tui-image-editor-controls-buttons button, .tui-image-editor-container .tui-image-editor-controls-buttons div {
+  /* display: inline-block; */
+  position: fixed !important;
+  bottom: 10px;
+  right: 10px;
+  width: 120px;
+  height: 40px;
+  padding: 0;
+  line-height: 40px;
+  outline: none;
+
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  vertical-align: middle;
+  letter-spacing: .3px;
+  text-align: center;
+}
+
+.tui-image-editor-container .tui-image-editor-menu, .tui-image-editor-container .tui-image-editor-help-menu {
+
+  width: auto;
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+  display: none !important;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.tui-image-editor-container .tui-image-editor-controls {
+  position: absolute;
+  background-color: #151515;
+  width: auto !important;
+  height: 10px !important;
+  display: flex !important;
+  bottom: 0;
+  z-index: 2;
+}
+
+.tui-image-editor-container .tui-image-editor-main.tui-image-editor-menu-crop .tui-image-editor-submenu > div.tui-image-editor-menu-crop, .tui-image-editor-container .tui-image-editor-main.tui-image-editor-menu-resize .tui-image-editor-submenu > div.tui-image-editor-menu-resize, .tui-image-editor-container .tui-image-editor-main.tui-image-editor-menu-flip .tui-image-editor-submenu > div.tui-image-editor-menu-flip, .tui-image-editor-container .tui-image-editor-main.tui-image-editor-menu-rotate .tui-image-editor-submenu > div.tui-image-editor-menu-rotate, .tui-image-editor-container .tui-image-editor-main.tui-image-editor-menu-shape .tui-image-editor-submenu > div.tui-image-editor-menu-shape, .tui-image-editor-container .tui-image-editor-main.tui-image-editor-menu-text .tui-image-editor-submenu > div.tui-image-editor-menu-text, .tui-image-editor-container .tui-image-editor-main.tui-image-editor-menu-mask .tui-image-editor-submenu > div.tui-image-editor-menu-mask, .tui-image-editor-container .tui-image-editor-main.tui-image-editor-menu-icon .tui-image-editor-submenu > div.tui-image-editor-menu-icon, .tui-image-editor-container .tui-image-editor-main.tui-image-editor-menu-draw .tui-image-editor-submenu > div.tui-image-editor-menu-draw, .tui-image-editor-container .tui-image-editor-main.tui-image-editor-menu-filter .tui-image-editor-submenu > div.tui-image-editor-menu-filter, .tui-image-editor-container .tui-image-editor-main.tui-image-editor-menu-zoom .tui-image-editor-submenu > div.tui-image-editor-menu-zoom {
+  display: none !important;
+
+}
+
+.tui-image-editor-container .tui-image-editor-submenu {
+
+  height: auto !important;
+}
+.tui-image-editor-container.top .tui-image-editor-submenu > div {
+  padding-top: 0px !important;
+}
+.tui-image-editor-container.top .tui-image-editor-main {
+  top: 40px !important;
+}
+.tui-image-editor-container .tui-image-editor-wrap .tui-image-editor-size-wrap .tui-image-editor-align-wrap {
+  display: block !important;
+
+}
+
