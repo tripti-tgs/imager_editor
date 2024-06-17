@@ -72,7 +72,8 @@ const TextControls: React.FC<TextControlsProps> = ({
   };
 
   const handleTextDecoration = () => {
-    const newTextDecoration = textDecoration === "underline" ? "none" : "underline";
+    const newTextDecoration =
+      textDecoration === "underline" ? "none" : "underline";
     setTextDecoration(newTextDecoration);
     handleChangeTextStyle(
       textFill,
@@ -96,13 +97,22 @@ const TextControls: React.FC<TextControlsProps> = ({
       <button className="btn btn-secondary m-1" onClick={handleTextDecoration}>
         Underline
       </button>
-      <button className="btn btn-secondary m-1" onClick={() => setTextAlign("left")}>
+      <button
+        className="btn btn-secondary m-1"
+        onClick={() => setTextAlign("left")}
+      >
         Left
       </button>
-      <button className="btn btn-secondary m-1" onClick={() => setTextAlign("center")}>
+      <button
+        className="btn btn-secondary m-1"
+        onClick={() => setTextAlign("center")}
+      >
         Center
       </button>
-      <button className="btn btn-secondary m-1" onClick={() => setTextAlign("right")}>
+      <button
+        className="btn btn-secondary m-1"
+        onClick={() => setTextAlign("right")}
+      >
         Right
       </button>
       <input

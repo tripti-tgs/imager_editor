@@ -47,6 +47,11 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
   const [textDecoration, setTextDecoration] = useState<string>("");
 
   const [activeObject, setActiveObject] = useState<any>();
+  const [zoomLevel, setZoomLevel] = useState<number>(1.0);
+  const [zoomInvalue, SetZoomInValue] = useState<boolean>(false);
+  const [showCropButton, setshowCropButton] = useState<boolean>(false);
+
+  // const[showHistory,setShowHistory] = useState<boolean>(false)
 
   const handleClick = (action: string, value: any) => {
     const editorInstance = editorInstanceRef.current;
@@ -76,6 +81,10 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
     if (editorInstance) {
       editorInstance.stopDrawingMode();
       editorInstance.startDrawingMode(action, value);
+      editorInstance.on("objectActivated", (objectProps: any) => {
+        // console.info(objectProps);
+        setActiveObject(objectProps);
+      });
     }
   };
 
@@ -124,38 +133,19 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
     fontStyle: string
   ) => {
     const editorInstance = editorInstanceRef.current;
+
     if (editorInstance) {
+      console.log(editorInstance.ui.text);
       editorInstance.stopDrawingMode();
       editorInstance.startDrawingMode("TEXT");
-      editorInstanceRef.current.on({
-        addText: function (pos: any) {
-          editorInstance
-            .addText("hello", {
-              position: pos.originPosition,
-              styles: {
-                fill: textFill,
-                fontSize: fontSize,
-                fontWeight: fontWeight,
-                // fontFamily: fontFamily,
-                fontStyle: fontStyle,
-                textAlign: textAlign,
-                textDecoration: textDecoration,
-              },
-            })
-            .then(function (objectProps: any) {
-              console.log(objectProps);
-            })
-            .catch(function (err: Error) {
-              console.log(err);
-            });
-        },
-
-        objectActivated: function (objectProps: any) {
-          console.info(objectProps);
-          setActiveObject(objectProps);
-        },
+      editorInstance.on("objectActivated", (objectProps: any) => {
+        // console.info(objectProps);
+        setActiveObject(objectProps);
       });
     }
+    editorInstance.on("addText", function (pos: any) {
+      console.info(pos);
+    });
   };
 
   const handleChangeTextStyle = (
@@ -180,15 +170,15 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
         textDecoration: textDecoration,
       });
     } catch (err) {
-      handleClickAddText(
-        textFill,
-        fontSize,
-        fontWeight,
-        fontFamily,
-        textAlign,
-        textDecoration,
-        fontStyle
-      );
+      // handleClickAddText(
+      //   textFill,
+      //   fontSize,
+      //   fontWeight,
+      //   fontFamily,
+      //   textAlign,
+      //   textDecoration,
+      //   fontStyle
+      // );
       console.error(err);
     }
   };
@@ -232,7 +222,7 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
             path: imageURLOri,
             name: "SampleImage",
           },
-          menu: ["shape", "text"],
+          menu: ["shape", "text", "crop"],
           // initMenu: "filter",
           uiSize: {
             height: `100vh`,
@@ -259,7 +249,133 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
   const handleImageChangeOriginal = (url: string) => {
     setImageURLOri(url);
   };
+  const handleUndo = () => {
+    const editorInstance = editorInstanceRef.current;
+    let undo = editorInstance.isEmptyUndoStack();
+    if (!undo) {
+      editorInstance
+        .undo()
+        .then((status: any) => {
+          console.log("angle: ", status);
+        })
+        .catch((message: any) => {
+          console.log("error: ", message);
+        });
+    }
+  };
 
+  const handleRedo = () => {
+    const editorInstance = editorInstanceRef.current;
+    let redo = editorInstance.isEmptyRedoStack();
+    if (!redo) {
+      editorInstance.redo();
+    }
+  };
+
+  const handleRest = () => {
+    const editorInstance = editorInstanceRef.current;
+    editorInstance.clearObjects();
+  };
+
+  const handleClickZoomIn = (e: any) => {
+    setZoomLevel((prevZoom) => prevZoom + 0.1);
+    const editorInstance = editorInstanceRef.current;
+
+    // const canvas = editorInstance.current.getCanvas();
+
+    // console.log(e);
+    // console.log({ x: e.screenX, y: e.screenY, zoomLevel: 5.0 });
+
+    const canvasSize = editorInstance.getCanvasSize();
+    const canvasWidth = canvasSize.width;
+    const canvasHeight = canvasSize.height;
+
+    const container = editorInstance.ui._editorElement;
+    const rect = container.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const normalizedX = (x / rect.width) * canvasWidth;
+    const normalizedY = (y / rect.height) * canvasHeight;
+
+    editorInstance.zoom(
+      { x: normalizedX, y: normalizedY, zoomLevel },
+      normalizedX,
+      normalizedY,
+      zoomLevel
+    );
+  };
+
+  const handleZoomOut = () => {
+    SetZoomInValue(!zoomInvalue);
+
+    const editorInstance = editorInstanceRef.current;
+    const canvasSize = editorInstance.getCanvasSize();
+    const canvasWidth = canvasSize.width;
+    const canvasHeight = canvasSize.height;
+    setZoomLevel((prevZoom) => prevZoom - 0.1);
+    if (zoomLevel >= 1) {
+      editorInstance.zoom({
+        x: canvasWidth / 2,
+        y: canvasHeight / 2,
+        zoomLevel: zoomLevel,
+      });
+    }
+  };
+
+  const handleDelete = () => {
+    const editorInstance = editorInstanceRef.current;
+
+    if (activeObject) {
+      try {
+        let id = activeObject.id;
+        editorInstance.removeObject(parseInt(id));
+        setActiveObject(null);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+  const handleHistory = () => {
+    const editorInstance = editorInstanceRef.current;
+    editorInstance._clearHistory();
+  };
+
+  const handleCrop = () => {
+    const editorInstance = editorInstanceRef?.current;
+    editorInstance.stopDrawingMode();
+    editorInstance.startDrawingMode("CROPPER");
+
+    editorInstance.setCropzoneRect(1, 1, 1, 1);
+    setshowCropButton(!showCropButton);
+  };
+
+  const handleCropApply = () => {
+    const editorInstance = editorInstanceRef.current;
+    if (editorInstance) {
+      const cropRect = editorInstance.getCropzoneRect();
+      console.log(cropRect)
+      if (cropRect) {
+        editorInstance
+          .crop(cropRect)
+          .then((cropedImageData:any) => {
+            console.log(cropedImageData);
+            editorInstance.stopDrawingMode();
+            setshowCropButton(false);
+          })
+          .catch((err:Error) => {
+            console.error(err);
+          });
+      }
+    }
+  };
+
+  const handleCropCancel = () => {
+    const editorInstance = editorInstanceRef.current;
+    editorInstance.stopDrawingMode();
+    setshowCropButton(false);
+  };
   return (
     <div>
       <div>
@@ -308,6 +424,53 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
           Text
         </button>
 
+        <button className="btn btn-primary m-1" onClick={handleUndo}>
+          Undo
+        </button>
+        <button className="btn btn-primary m-1" onClick={handleRedo}>
+          Redo
+        </button>
+
+        <button className="btn btn-primary m-1" onClick={handleRest}>
+          Reset
+        </button>
+
+        <button
+          className="btn btn-primary m-1"
+          onClick={() => SetZoomInValue(!zoomInvalue)}
+        >
+          Zoom In
+        </button>
+        <button className="btn btn-primary m-1" onClick={handleZoomOut}>
+          Zoom out
+        </button>
+        <button className="btn btn-primary m-1" onClick={handleDelete}>
+          Delete
+        </button>
+
+        <button className="btn btn-primary m-1" onClick={handleCrop}>
+          Crop
+        </button>
+
+        {showCropButton && (
+          <>
+            <button className="btn btn-secondary m-1" onClick={handleCropApply}>
+              Apply
+            </button>
+
+            <button
+              className="btn btn-secondary m-1"
+              onClick={handleCropCancel}
+            >
+              Cancel
+            </button>
+          </>
+        )}
+        {/* <button onClick={handleHistory}>History</button>
+        {showHistory && (
+
+        )} */}
+
         {flipshow && <FlipControls handleClick={handleClick} />}
         {rotateshow && <RotateControls handleClick={handleClick} />}
         {drawshow && (
@@ -354,7 +517,11 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
           />
         )}
       </div>
-      <div ref={editorRef} />
+
+      <div
+        onClick={zoomInvalue ? handleClickZoomIn : undefined}
+        ref={editorRef}
+      />
 
       <div>
         <ImageList
