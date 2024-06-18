@@ -73,7 +73,7 @@ const TextControls: React.FC<TextControlsProps> = ({
 
   const handleTextDecoration = () => {
     const newTextDecoration =
-      textDecoration === "underline" ? "none" : "underline";
+      textDecoration == "underline" ? "underline" : "underline";
     setTextDecoration(newTextDecoration);
     handleChangeTextStyle(
       textFill,
