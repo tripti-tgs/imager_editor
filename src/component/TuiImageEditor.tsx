@@ -355,16 +355,16 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
     const editorInstance = editorInstanceRef.current;
     if (editorInstance) {
       const cropRect = editorInstance.getCropzoneRect();
-      console.log(cropRect)
+      console.log(cropRect);
       if (cropRect) {
         editorInstance
           .crop(cropRect)
-          .then((cropedImageData:any) => {
+          .then((cropedImageData: any) => {
             console.log(cropedImageData);
             editorInstance.stopDrawingMode();
             setshowCropButton(false);
           })
-          .catch((err:Error) => {
+          .catch((err: Error) => {
             console.error(err);
           });
       }
@@ -384,25 +384,53 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
         </button>
         <button
           className="btn btn-primary m-1"
-          onClick={() => setFlipShow(!flipshow)}
+          onClick={() => {
+            setFlipShow(!flipshow);
+            setRotateShow(false);
+            setdrawShow(false);
+            setShapeShow(false);
+            setTextShow(false);
+            SetZoomInValue(false);
+          }}
         >
           Flip
         </button>
         <button
           className="btn btn-primary m-1"
-          onClick={() => setRotateShow(!rotateshow)}
+          onClick={() => {
+            setRotateShow(!rotateshow);
+            setFlipShow(false);
+            setdrawShow(false);
+            setShapeShow(false);
+            setTextShow(false);
+            SetZoomInValue(false);
+          }}
         >
           Rotate
         </button>
         <button
           className="btn btn-primary m-1"
-          onClick={() => setdrawShow(!drawshow)}
+          onClick={() => {
+            setdrawShow(!drawshow);
+            setFlipShow(false);
+            setRotateShow(false);
+            setShapeShow(false);
+            setTextShow(false);
+            SetZoomInValue(false);
+          }}
         >
           Draw
         </button>
         <button
           className="btn btn-primary m-1"
-          onClick={() => setShapeShow(!shapeshow)}
+          onClick={() => {
+            setShapeShow(!shapeshow);
+            setdrawShow(false);
+            setFlipShow(false);
+            setRotateShow(false);
+            setTextShow(false);
+            SetZoomInValue(false);
+          }}
         >
           Shape
         </button>
@@ -418,6 +446,11 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
               textDecoration,
               fontStyle
             );
+            setShapeShow(false);
+            setdrawShow(false);
+            setFlipShow(false);
+            setRotateShow(false);
+            SetZoomInValue(false);
             setTextShow((prevTextShow) => !prevTextShow);
           }}
         >
@@ -437,7 +470,14 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
 
         <button
           className="btn btn-primary m-1"
-          onClick={() => SetZoomInValue(!zoomInvalue)}
+          onClick={() => {
+            SetZoomInValue(!zoomInvalue);
+            setShapeShow(false);
+            setdrawShow(false);
+            setFlipShow(false);
+            setRotateShow(false);
+            setTextShow(false);
+          }}
         >
           Zoom In
         </button>
