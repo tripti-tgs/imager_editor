@@ -7,7 +7,7 @@ import PqinaImageEditor from "./component/PqinaImageEditor";
 import AvatarImageEditor from "./component/AvatarImageEditor";
 
 
-import Navbar from "./component/Navbar";
+import Navbar from "./component/tuiNavbar/Navbar";
 function App() {
   return (
     <div>

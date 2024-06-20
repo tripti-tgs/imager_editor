@@ -358,3 +358,204 @@ const cancelCrop = () => {
   editorInstance.stopDrawingMode();
   setIsCropping(false);
 };
+
+         <button
+            className="btn active  "
+            onClick={() => {
+              setFlipShow(!flipshow);
+              setRotateShow(false);
+              setdrawShow(false);
+              setShapeShow(false);
+              setTextShow(false);
+              SetZoomInValue(false);
+              setShowMaskSubMeun(false);
+              setShowIconMenu(false);
+              setShowResizeSubMenu(false);
+            }}
+          >
+            <FlipIcon fontSize="large" />
+          </button>
+          <button
+            className="btn  "
+            onClick={() => {
+              setRotateShow(!rotateshow);
+              setFlipShow(false);
+              setdrawShow(false);
+              setShapeShow(false);
+              setTextShow(false);
+              SetZoomInValue(false);
+              setShowMaskSubMeun(false);
+              setShowIconMenu(false);
+              setShowResizeSubMenu(false);
+            }}
+          >
+            <LoopIcon fontSize="large" />
+          </button>
+          <button
+            className="btn  "
+            onClick={() => {
+              setdrawShow(!drawshow);
+              setFlipShow(false);
+              setRotateShow(false);
+              setShapeShow(false);
+              setTextShow(false);
+              SetZoomInValue(false);
+              setShowMaskSubMeun(false);
+              setShowIconMenu(false);
+              setShowResizeSubMenu(false);
+            }}
+          >
+            <DrawIcon fontSize="large" />
+          </button>
+          <button
+            className="btn  "
+            onClick={() => {
+              setShapeShow(!shapeshow);
+              setdrawShow(false);
+              setFlipShow(false);
+              setRotateShow(false);
+              setTextShow(false);
+              SetZoomInValue(false);
+              setShowMaskSubMeun(false);
+              setShowIconMenu(false);
+              setShowResizeSubMenu(false);
+              handleClickShape("triangle", {
+                fill,
+                stroke,
+                strokeWidth,
+                rx: 10,
+                ry: 1000,
+              });
+            }}
+          >
+            <ShapeLineSharpIcon fontSize="large" />
+          </button>
+          <button
+            className="btn  "
+            onClick={(e) => {
+              setShapeShow(false);
+              setdrawShow(false);
+              setFlipShow(false);
+              setRotateShow(false);
+              SetZoomInValue(false);
+              setShowMaskSubMeun(false);
+              setShowIconMenu(false);
+              setShowResizeSubMenu(false);
+              setTextShow((prevTextShow) => !prevTextShow);
+            }}
+          >
+            <FormatColorTextSharpIcon fontSize="large" />
+          </button>
+
+          <button className="btn  " onClick={handleUndo}>
+            <UndoSharpIcon fontSize="large" />
+          </button>
+          <button className="btn  " onClick={handleRedo}>
+            <RedoSharpIcon fontSize="large" />
+          </button>
+
+          <button className="btn  " onClick={handleRest}>
+            <RestartAltSharpIcon fontSize="large" />
+          </button>
+
+          <button
+            className="btn  "
+            onClick={() => {
+              setShowMaskSubMeun(false);
+              setShowIconMenu(false);
+              setShowResizeSubMenu(false);
+              SetZoomInValue(!zoomInvalue);
+              setShapeShow(false);
+              setdrawShow(false);
+              setFlipShow(false);
+              setRotateShow(false);
+              setTextShow(false);
+            }}
+          >
+            <ZoomInSharpIcon fontSize="large" />
+          </button>
+          <button className="btn  " onClick={handleZoomOut}>
+            <ZoomOutSharpIcon fontSize="large" />
+          </button>
+          <button className="btn  " onClick={handleDelete}>
+            <DeleteSharpIcon fontSize="large" />
+          </button>
+
+          <button className="btn  " onClick={handleCrop}>
+            <CropFreeSharpIcon fontSize="large" />
+          </button>
+
+          <button
+            className="btn btn-primary m-1"
+            onClick={() => {
+              setShowMaskSubMeun(!showMaskSubMeun);
+              setShowIconMenu(false);
+              setShowResizeSubMenu(false);
+              SetZoomInValue(false);
+              setShapeShow(false);
+              setdrawShow(false);
+              setFlipShow(false);
+              setRotateShow(false);
+              setTextShow(false);
+            }}
+          >
+            Mark
+          </button>
+          <button
+            className="btn btn-primary m-1"
+            onClick={() => {
+              const canvasSize = editorInstanceRef.current.getCanvasSize();
+              const canvasWidth = canvasSize.width;
+              const canvasHeight = canvasSize.height;
+
+              setCanvasWidth(canvasWidth);
+              setCanvasHeight(canvasHeight);
+              setShowIconMenu(false);
+              setShowResizeSubMenu(!showResizeSubMenu);
+              setShowMaskSubMeun(false);
+              SetZoomInValue(false);
+              setShapeShow(false);
+              setdrawShow(false);
+              setFlipShow(false);
+              setRotateShow(false);
+              setTextShow(false);
+            }}
+          >
+            Resize
+          </button>
+
+          <button
+            className="btn btn-primary m-1"
+            onClick={() => {
+              setShowIconMenu(!showIconSubMenu);
+              setShowResizeSubMenu(false);
+              setShowMaskSubMeun(false);
+              SetZoomInValue(false);
+              setShapeShow(false);
+              setdrawShow(false);
+              setFlipShow(false);
+              setRotateShow(false);
+              setTextShow(false);
+            }}
+          >
+            icon
+          </button>
+
+          <button
+            className="btn btn-primary m-1"
+            onClick={() => {
+              setShowIconMenu(false);
+              setshowFilterSubMenu(!showFilterSubMenu);
+              setShowResizeSubMenu(false);
+              setShowMaskSubMeun(false);
+              SetZoomInValue(false);
+              setShapeShow(false);
+              setdrawShow(false);
+              setFlipShow(false);
+              setRotateShow(false);
+              setTextShow(false);
+            }}
+          >
+            Filter
+          </button>
+        </div>
