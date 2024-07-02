@@ -25,6 +25,7 @@
     "react-avatar-editor": "^13.0.2",
     "react-dom": "^18.3.1",
     "react-filerobot-image-editor": "^4.8.1",
+    "react-image-file-resizer": "^0.4.8",
     "react-router-dom": "^6.23.1",
     "react-scripts": "5.0.1",
     "tui-image-editor": "^3.15.3",

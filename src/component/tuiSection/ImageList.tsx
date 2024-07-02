@@ -10,15 +10,15 @@ const ImageList: React.FC<ImageListProps> = ({ images, onImageChange, onImageCha
   return (
     <div>
       {/* Map through the array of images */}
-      {images.map((image, index) => (
+      {images.map((img, index) => (
         <div key={index}>
           {/* Display each image with an onClick event to trigger onImageChange */}
-          <img src={image.url} alt={`Image ${index}`} onClick={() => onImageChange(image.url)} />
-          
-          {/* Button to load the original image, onClick triggers onImageChangeOriginal */}
-          <button onClick={() => onImageChangeOriginal(image.url)}>Load Original</button>
+          <button onClick={() => onImageChange(img.image)} >Load image {index}</button>
         </div>
+     
       ))}
+           {/* Button to load the original image, onClick triggers onImageChangeOriginal */}
+           {/* <button onClick={() => onImageChangeOriginal(image.url)}>Load Original</button> */}
     </div>
   );
 };

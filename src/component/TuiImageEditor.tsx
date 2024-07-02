@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import ImageEditor from "tui-image-editor"; // Importing tui-image-editor library
 import SaveAltIcon from "@mui/icons-material/SaveAlt"; // Material-UI icons for UI buttons
 import FlipIcon from "@mui/icons-material/Flip";
@@ -52,7 +52,7 @@ import {
   handleChangeIconColorStyleUtils,
   applyOrRemoveFilterUtils,
 } from "./untily/TuiUntily"; // Utility functions for handling various editor actions
-
+import Resizer from "react-image-file-resizer";
 // Interface for props (currently empty)
 interface ImageEditorComponentProps {}
 
@@ -69,8 +69,12 @@ enum Tabs {
   TEXT = "TEXT",
   FILTER = "FILTER",
   CROP = "CROP",
+  HISTORY = "HISTORY",
 }
-
+interface HistoryState {
+  undoStack: any[];
+  redoStack: any[];
+}
 // Functional component definition for the image editor
 const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
   // Refs for accessing the editor DOM element and its instance
@@ -129,6 +133,16 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
   const [iconFill, setIconFill] = useState<string>("#000"); // Initial icon fill color
   const [iconSymbol, seticonSymbol] = useState<string>("arrow"); // Initial icon symbol
 
+  const [history, setHistory] = useState<any>([]);
+  const [actionHistory, setActionHistory] = useState<any>();
+
+  const [objectMoved, setObjectMoved] = useState<any>();
+
+  const [ResizeValue, setResizeValue] = useState<boolean>();
+
+  const [actionIcon, setActionIcon] = useState<boolean>(false);
+
+  const [zoomValueCount, setZoomValueCount] = useState<number>(0);
   // State variables for filter options
   const [filters, setFilters] = useState<any>({
     Grayscale: false,
@@ -161,7 +175,8 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
   // Flag indicating support for necessary File APIs
   const supportingFileAPI =
     !!window.File && !!window.FileReader && !!window.FileList && !!window.Blob;
-
+  
+    const isInitialRender = useRef(true);
   // State variable for active tab in the editor UI
   const [activeTab, setActiveTab] = useState<string | null>(null);
 
@@ -195,13 +210,14 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
           const canvasHeight = canvasSize.height;
           setCanvasWidth(canvasHeight); // Set canvas width
           setCanvasHeight(canvasWidth); // Set canvas height
+          addToHistory("Load");
         }
       };
 
       // Check image load after 200ms
-      const imageLoadInterval = setTimeout(checkImageLoaded, 200);
+      setTimeout(checkImageLoaded, 1000);
     }
-  }, []);
+  },[]);
 
   useEffect(() => {
     // Fetch images data on component mount
@@ -213,8 +229,10 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
     const editorInstance = editorInstanceRef.current;
     if (editorInstance) {
       const dataUrl = editorInstance.toDataURL(); // Get image data URL
+
+      let data = { image: dataUrl, name: "MD" };
+      saveImage(data); // Save image function
       alert("save image!");
-      saveImage(dataUrl); // Save image function
     }
   };
 
@@ -258,14 +276,15 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
       editorInstance,
       action,
       CountTotalNumberOfFlip,
-      setCountTotalNumberOfFlip
+      setCountTotalNumberOfFlip,
+      addToHistory
     );
   };
 
   const handleClickRoate = (value: string) => {
     const editorInstance = editorInstanceRef.current;
     // Handle rotating action using utility function
-    handleClickRoateUtils(editorInstance, value);
+    handleClickRoateUtils(editorInstance, value, addToHistory);
   };
 
   const handleClickDrawing = (action: string, value: any) => {
@@ -276,7 +295,8 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
       action,
       value,
       setClickDrawValue,
-      setActiveObject
+      setActiveObject,
+      addToHistory
     );
   };
 
@@ -288,7 +308,8 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
       action,
       value,
       setClickDrawValue,
-      setActiveObject
+      setActiveObject,
+      addToHistory
     );
   };
 
@@ -300,10 +321,19 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
       setClickshapeValue,
       setActiveObject,
       action,
-      value
+      value,
+      addToHistory,
+      objectMoved,
+      setObjectMoved
     );
   };
-
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+    } else {
+      addToHistory(objectMoved);
+    }
+  }, [objectMoved]);
   const handleChangeShape = (fill: any, stroke: any, strokeWidth: any) => {
     const editorInstance = editorInstanceRef.current;
     // Handle changing shape properties (fill, stroke, strokeWidth) using utility function
@@ -312,7 +342,8 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
       fill,
       stroke,
       strokeWidth,
-      activeObject
+      activeObject,
+      addToHistory
     );
   };
 
@@ -340,7 +371,9 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
       setActiveObject,
       editorInstance,
       setobjectMovedValueText,
-      objectMovedValueText
+      objectMovedValueText,
+      addToHistory,
+      setObjectMoved
     );
   };
 
@@ -354,6 +387,7 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
     fontStyle: string
   ) => {
     const editorInstance = editorInstanceRef.current;
+    // console.log(activeObject)
     // Handle changing text style using utility function
     handleChangeTextStyleUtils(
       textFill,
@@ -363,8 +397,9 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
       textAlign,
       textDecoration,
       fontStyle,
+      activeObject,
       editorInstance,
-      activeObject
+      addToHistory
     );
   };
 
@@ -403,18 +438,22 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
     const editorInstance = editorInstanceRef.current;
     // Handle zoom-in action using utility function
     handleClickZoomInUtils(e, setZoomLevel, editorInstance, zoomLevel);
+    setZoomValueCount(zoomValueCount + 1);
   };
 
   const handleZoomOut = () => {
     const editorInstance = editorInstanceRef.current;
     // Handle zoom-out action using utility function
-    handleZoomOutUtils(
-      setZoomLevel,
-      editorInstance,
-      zoomLevel,
-      SetZoomInValue,
-      zoomInvalue
-    );
+    if (zoomValueCount != 0) {
+      handleZoomOutUtils(
+        setZoomLevel,
+        editorInstance,
+        zoomLevel,
+        SetZoomInValue,
+        zoomInvalue
+      );
+      setZoomValueCount(zoomValueCount - 1);
+    }
   };
 
   const handleDelete = () => {
@@ -440,12 +479,12 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
 
   const handleImageEditorLoad = () => {
     // Handle actions after the image editor is loaded using utility function
-    handleImageEditorLoadUtils(editorInstanceRef);
+    handleImageEditorLoadUtils(editorInstanceRef, addToHistory);
   };
 
   const handleMaskApply = () => {
     // Apply mask to active object using utility function
-    handleMaskApplyUtils(editorInstanceRef, activeObject);
+    handleMaskApplyUtils(editorInstanceRef, activeObject, addToHistory);
   };
 
   const handleLoadMaskImageChange = (e: any) => {
@@ -454,12 +493,15 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
       e,
       editorInstanceRef,
       supportingFileAPI,
-      setActiveObject
+      setActiveObject,
+      addToHistory,
+      setObjectMoved
     );
   };
 
   const handleOnChangeWidth = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Handle width change of editor canvas using utility function
+    setResizeValue(true);
     handleOnChangeWidthUtils(
       e,
       setCanvasWidth,
@@ -471,6 +513,7 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
 
   const handleOnChangeHeight = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Handle height change of editor canvas using utility function
+    setResizeValue(true);
     handleOnChangeHeightUtils(
       e,
       setCanvasHeight,
@@ -481,43 +524,56 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
   };
 
   const handleResizeApply = () => {
+    setResizeValue(false);
     setActiveTab(activeTab == "RESIZE" ? null : null);
-    // Handle apply resize action using utility function (commented out in the original code)
-    // handleResizeApplyUtils(
-    //   setActiveTab,
-    //   activeTab,
-    //   editorInstanceRef,
-    //   canvasWidth,
-    //   canvasHeight
-    // );
+    addToHistory("Resize (Apply)");
   };
 
   const handleResizeCancel = () => {
     const editorInstance = editorInstanceRef.current;
     // Cancel resize action and reset canvas dimensions using utility function
-    editorInstance.resize({
-      width: startcanvasWidth,
-      height: startcanvasHeight,
-    });
+    editorInstance
+      .resize({
+        width: startcanvasWidth + 2000,
+        height: startcanvasHeight,
+      })
+      .then((props: any) => {
+        console.info(props);
+      })
+      .catch((err: Error) => {
+        console.error("Error resizing canvas:", err);
+      });
+    addToHistory("Resize (Cancel)");
+
     setActiveTab(activeTab == "RESIZE" ? null : null);
   };
 
   const handleIcon = (e: any) => {
     // Handle adding icon to editor canvas using utility function
-    handleIconUtils(
-      e,
-      editorInstanceRef,
-      setobjectMovedValueIcon,
-      objectMovedValueIcon,
-      setActiveObject,
-      iconSymbol,
-      iconFill
-    );
+    if (actionIcon) {
+      handleIconUtils(
+        e,
+        editorInstanceRef,
+        setobjectMovedValueIcon,
+        objectMovedValueIcon,
+        setActiveObject,
+        iconSymbol,
+        iconFill,
+        addToHistory,
+        setObjectMoved
+      );
+      setActionIcon(false);
+    }
   };
 
   const handleChangeIconColorStyle = () => {
     // Handle changing icon color style using utility function
-    handleChangeIconColorStyleUtils(editorInstanceRef, activeObject, iconFill);
+    handleChangeIconColorStyleUtils(
+      editorInstanceRef,
+      activeObject,
+      iconFill,
+      addToHistory
+    );
   };
 
   const applyOrRemoveFilter = (
@@ -526,7 +582,13 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
     options: any
   ) => {
     // Apply or remove filter to/from active object using utility function
-    applyOrRemoveFilterUtils(editorInstanceRef, applying, type, options);
+    applyOrRemoveFilterUtils(
+      editorInstanceRef,
+      applying,
+      type,
+      options,
+      addToHistory
+    );
   };
 
   const handleTabClick = (tab: string) => {
@@ -538,9 +600,71 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
     setStartCanvasWidth(canvasHeight);
     setStartCanvasHeight(canvasWidth);
     SetZoomInValue(false);
+    if (ResizeValue) {
+      handleResizeCancel();
+    }
     setActiveTab(activeTab === tab ? null : tab);
   };
 
+  const addToHistory = useCallback(
+    (action: any, data?: any) => {
+      const editorInstance = editorInstanceRef.current;
+      if (editorInstance) {
+        setHistory((prevHistory: any) => {
+          const newHistory = {
+            action: action,
+            url: editorInstance.toDataURL(),
+            data: data,
+          };
+          return [...prevHistory, newHistory];
+        });
+      }
+    },
+    [editorInstanceRef]
+  );
+
+  const undo = useCallback(
+    (indexValue: number) => {
+      let editorInstance= editorInstanceRef.current
+      if (history.length > indexValue && editorInstance) {
+        const { action, data, url }: any = history[indexValue];
+        editorInstance.loadImageFromURL(url, "undo");
+        // if (
+        //   ["Shape", "Shape (Change)", "Text (Change)", "Mark (Change)", "Icon (Change)", "Icon", "Mark", "Text"].includes(action)
+        // ) {
+        //   if (data) {
+        //     console.log("hleii");
+        //     const { id, props } = data;
+        //     const object =editorInstance.getObjectProperties(data.id)
+        //     if (object) {
+          
+        //       handleClickShapeUtils(
+        //         editorInstance,
+        //         setClickshapeValue,
+        //         setActiveObject,
+        //         action.type,
+        //         object,
+        //         addToHistory,
+        //         objectMoved,
+        //         setObjectMoved
+        //       );
+        //     }
+        //   }
+        // } else if (url) {
+        //   editorInstanceRef.current.loadImageFromURL(url, "undo");
+        // }
+      }
+    },
+    [history, editorInstanceRef]
+  );
+  
+  const callChangeObjectSize = (e: any) => {
+    console.log("hello")
+    if (objectMoved) {
+      addToHistory(objectMoved);
+    }
+    setObjectMoved("");
+  };
   return (
     <div className="cm-image-editor-wrapper">
       <div className="cm-editor-parent">
@@ -565,10 +689,37 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
                   handleIcon={handleIcon}
                   setIconFill={setIconFill}
                   iconFill={iconFill}
+                  setActionIcon={setActionIcon}
                   seticonSymbol={seticonSymbol}
                   handleChangeIconColorStyle={handleChangeIconColorStyle}
                 />
               </div>
+            )}
+            <button onClick={() => handleTabClick(Tabs.HISTORY)}>
+              History
+            </button>
+            {activeTab === Tabs.HISTORY && (
+              <>
+                <ul>
+                  {history.map((e: any, index: number) => (
+                    <li
+                      key={index}
+                      onClick={() => {
+                        undo(index);
+                        setActionHistory(index);
+                      }}
+                      style={{
+                        opacity:
+                          actionHistory !== null && index > actionHistory
+                            ? 0.5
+                            : 1,
+                      }}
+                    >
+                      {e.action}
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
 
             {/* Resize tab */}
@@ -748,6 +899,7 @@ const TuiImageEditorComponent: React.FC<ImageEditorComponentProps> = () => {
 
       {/* Editor canvas where interactions are handled */}
       <div
+        onMouseUp={callChangeObjectSize}
         onClick={
           zoomInvalue
             ? handleClickZoomIn

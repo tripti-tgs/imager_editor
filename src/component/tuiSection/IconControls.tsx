@@ -6,6 +6,7 @@ interface IconComponentProps {
   iconFill: string; // Current icon fill color
   handleChangeIconColorStyle: () => void; // Callback function to handle changes in icon color style
   seticonSymbol: React.Dispatch<React.SetStateAction<string>>; // Setter function to update the icon symbol state
+  setActionIcon:React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const IconComponent: React.FC<IconComponentProps> = ({
@@ -14,12 +15,14 @@ const IconComponent: React.FC<IconComponentProps> = ({
   setIconFill,
   seticonSymbol,
   handleChangeIconColorStyle,
+  setActionIcon
 }) => (
   <div>
     {/* Button for Arrow icon */}
     <button
       className="btn btn-secondary m-1"
       onClick={(e) => {
+        setActionIcon(true)
         seticonSymbol("arrow"); // Set the icon symbol state to "arrow"
         handleIcon(e); // Trigger the handleIcon callback function with the click event
       }}
@@ -31,6 +34,8 @@ const IconComponent: React.FC<IconComponentProps> = ({
     <button
       className="btn btn-secondary m-1"
       onClick={(e) => {
+        setActionIcon(true)
+
         seticonSymbol("cancel"); // Set the icon symbol state to "cancel"
         handleIcon(e); // Trigger the handleIcon callback function with the click event
       }}
@@ -42,6 +47,8 @@ const IconComponent: React.FC<IconComponentProps> = ({
     <button
       className="btn btn-secondary m-1"
       onClick={(e) => {
+        setActionIcon(true)
+
         seticonSymbol("customArrow"); // Set the icon symbol state to "customArrow"
         handleIcon(e); // Trigger the handleIcon callback function with the click event
       }}

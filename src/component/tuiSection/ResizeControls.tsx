@@ -47,6 +47,8 @@ const ResizeComponent: React.FC<ResizeComponentProps> = ({
       type="number"
       min="0"
       value={canvasWidth}
+      onClick={()=>handleOnChangeHeight}
+
       onChange={handleOnChangeWidth}
     />
 
@@ -56,6 +58,7 @@ const ResizeComponent: React.FC<ResizeComponentProps> = ({
       min="0"
       placeholder="height"
       value={canvasHeight}
+      onClick={()=>handleOnChangeHeight}
       onChange={handleOnChangeHeight}
     />
 

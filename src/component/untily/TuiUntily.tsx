@@ -3,7 +3,8 @@ export const handleClickFlipUtils = (
   editorInstance: any,
   action: string,
   CountTotalNumberOfFlip: number,
-  setCountTotalNumberOfFlip: any
+  setCountTotalNumberOfFlip: any,
+  addToHistory: any
 ) => {
   switch (action) {
     case "flipX":
@@ -12,6 +13,9 @@ export const handleClickFlipUtils = (
         .flipX()
         .then((status: any) => {
           // Increment flip count on successful flip
+          console.log(status);
+          addToHistory("flip (X)");
+
           setCountTotalNumberOfFlip(CountTotalNumberOfFlip + 1);
         })
         .catch((message: Error) => {
@@ -24,6 +28,7 @@ export const handleClickFlipUtils = (
         .flipY()
         .then((status: any) => {
           // Increment flip count on successful flip
+          addToHistory("flip (Y)");
           setCountTotalNumberOfFlip(CountTotalNumberOfFlip + 1);
         })
         .catch((message: Error) => {
@@ -35,6 +40,8 @@ export const handleClickFlipUtils = (
       editorInstance
         .resetFlip()
         .then((status: any) => {
+          addToHistory("flip (reset)");
+
           // Decrement flip count on successful reset
           setCountTotalNumberOfFlip(CountTotalNumberOfFlip - 1);
         })
@@ -48,8 +55,13 @@ export const handleClickFlipUtils = (
 };
 
 // Utility function to handle rotation action on the editor instance
-export const handleClickRoateUtils = (editorInstance: any, value: string) => {
+export const handleClickRoateUtils = (
+  editorInstance: any,
+  value: string,
+  addToHistory: any
+) => {
   editorInstance.rotate(value);
+  addToHistory(`rotate (${value})`);
 };
 
 // Utility function to handle drawing actions (e.g., drawing shapes, lines) on the editor instance
@@ -58,7 +70,8 @@ export const handleClickDrawingUtils = (
   action: string,
   value: any,
   setClickDrawValue: any,
-  setActiveObject: any
+  setActiveObject: any,
+  addToHistory: any
 ) => {
   // Set the current drawing action
   setClickDrawValue(action);
@@ -67,6 +80,7 @@ export const handleClickDrawingUtils = (
     editorInstance.stopDrawingMode();
     editorInstance.startDrawingMode(action, value);
     // Listen for the object activation event
+    addToHistory("Draw");
     editorInstance.on("objectActivated", (objectProps: any) => {
       setActiveObject(objectProps);
     });
@@ -79,23 +93,35 @@ export const handleClickShapeUtils = (
   setClickshapeValue: any,
   setActiveObject: any,
   action: string,
-  value: any
+  value: any,
+  addToHistory: any,
+  objectMoved: any,
+  setObjectMoved: any
 ) => {
   // Set the current shape drawing action
   setClickshapeValue(action);
   if (editorInstance) {
-    console.log(editorInstance)
     // Stop any previous drawing mode and start the shape drawing mode
     editorInstance.stopDrawingMode();
     editorInstance.startDrawingMode("SHAPE");
     // Listen for the object activation event
     editorInstance.on({
       objectActivated: function (objectProps: any) {
+        console.log(objectProps);
+        addToHistory("Shape", objectProps);
         setActiveObject(objectProps);
       },
     });
+    editorInstance.on("objectMoved", function (props: any) {
+      setObjectMoved("Shape (Change)",props);
+    });
+    editorInstance.on("objectScaled", function (props: any) {
+      setObjectMoved("Shape (Change)",props);
+    });
+
     // Set the specific shape type and properties
     editorInstance.setDrawingShape(action, value);
+    // addToHistory("Shape");
   }
 };
 
@@ -105,7 +131,8 @@ export const handleChangeShapeUtils = (
   fill: any,
   stroke: any,
   strokeWidth: any,
-  activeObject: any
+  activeObject: any,
+  addToHistory: any
 ) => {
   try {
     let id: any = activeObject.id;
@@ -115,6 +142,7 @@ export const handleChangeShapeUtils = (
       stroke: stroke,
       strokeWidth: strokeWidth,
     });
+    addToHistory("Shape (Change)");
   } catch (err) {
     console.error(err);
   }
@@ -133,7 +161,9 @@ export const handleClickAddTextUtils = (
   setActiveObject: any,
   editorInstance: any,
   setobjectMovedValueText: any,
-  objectMovedValueText: any
+  objectMovedValueText: any,
+  addToHistory: any,
+  setObjectMoved: any
 ) => {
   e.preventDefault();
 
@@ -166,7 +196,9 @@ export const handleClickAddTextUtils = (
       editorInstance,
       normalizedX,
       normalizedY,
-      setActiveObject
+      setActiveObject,
+      addToHistory,
+      setObjectMoved
     );
   }
 };
@@ -183,9 +215,11 @@ function addTextfunction(
   editorInstance: any,
   normalizedX: any,
   normalizedY: any,
-  setActiveObject: any
+  setActiveObject: any,
+  addToHistory: any,
+  setObjectMoved: any
 ) {
-    editorInstance.stopDrawingMode();
+  editorInstance.stopDrawingMode();
   editorInstance
     .addText("init text", {
       styles: {
@@ -203,8 +237,17 @@ function addTextfunction(
     })
     .then((objectProps: any) => {
       // Set the newly added text object as active
+      addToHistory("Text");
       setActiveObject(objectProps);
+      editorInstance.setObjectProperties(objectProps.id);
     });
+
+  editorInstance.on("objectMoved", function (props: any) {
+    setObjectMoved("Text (Change)",props);
+  });
+  editorInstance.on("objectScaled", function (props: any) {
+    setObjectMoved("Text (Change)",props);
+  });
 }
 
 // Utility function to handle changes in text style properties on the editor instance
@@ -217,7 +260,8 @@ export const handleChangeTextStyleUtils = (
   textDecoration: string,
   fontStyle: string,
   activeObject: any,
-  editorInstance: any
+  editorInstance: any,
+  addToHistory: any
 ) => {
   try {
     let id: any = activeObject.id;
@@ -231,6 +275,7 @@ export const handleChangeTextStyleUtils = (
       textAlign: textAlign,
       textDecoration: textDecoration,
     });
+    addToHistory("Text (Change)");
   } catch (err) {
     console.error(err);
   }
@@ -292,7 +337,7 @@ export const handleZoomOutUtils = (
   }
 
   // Toggle zoom-in value
-  SetZoomInValue(!zoomInvalue);
+  SetZoomInValue(false);
 };
 
 // Utility function to handle deletion of an active object from the canvas on the editor instance
@@ -347,7 +392,10 @@ export const handleCropCancelUtils = (
 };
 
 // Utility function to handle actions after the image editor is loaded
-export const handleImageEditorLoadUtils = (editorInstanceRef: any) => {
+export const handleImageEditorLoadUtils = (
+  editorInstanceRef: any,
+  addToHistory: any
+) => {
   const editorInstance = editorInstanceRef.current;
   if (editorInstance) {
     editorInstance.on("objectMoved", () => {
@@ -358,13 +406,15 @@ export const handleImageEditorLoadUtils = (editorInstanceRef: any) => {
           : null;
       console.info(cropRect);
     });
+    addToHistory("Mask");
   }
 };
 
 // Utility function to apply mask filter on an image object
 export const handleMaskApplyUtils = (
   editorInstanceRef: any,
-  activeObject: any
+  activeObject: any,
+  addToHistory: any
 ) => {
   const editorInstance = editorInstanceRef.current;
   if (editorInstance && activeObject) {
@@ -377,6 +427,7 @@ export const handleMaskApplyUtils = (
         })
         .then((result: any) => {
           console.info(result);
+          addToHistory("Mask (Apply)");
         });
     }
   }
@@ -387,7 +438,9 @@ export const handleLoadMaskImageChangeUtils = (
   e: any,
   editorInstanceRef: any,
   supportingFileAPI: boolean,
-  setActiveObject: any
+  setActiveObject: any,
+  addToHistory: any,
+  setObjectMoved: any
 ) => {
   const editorInstance = editorInstanceRef.current;
   if (!supportingFileAPI) {
@@ -406,8 +459,17 @@ export const handleLoadMaskImageChangeUtils = (
           if (editorInstance) {
             editorInstance.addImageObject(imgUrl).then((objectProps: any) => {
               URL.revokeObjectURL(file);
-
+              editorInstance.setObjectProperties(objectProps.id);
               setActiveObject(objectProps); // Set the newly added image object as active
+
+              addToHistory("Mark");
+            });
+
+            editorInstance.on("objectMoved", function (props: any) {
+              setObjectMoved("Mark (Change)",props);
+            });
+            editorInstance.on("objectScaled", function (props: any) {
+              setObjectMoved("Mark (Change)",props);
             });
           }
         });
@@ -482,7 +544,9 @@ export const handleIconUtils = (
   objectMovedValueIcon: any,
   setActiveObject: any,
   iconSymbol: string,
-  iconFill: string
+  iconFill: string,
+  addToHistory: any,
+  setObjectMoved: any
 ) => {
   const editorInstance = editorInstanceRef.current;
 
@@ -510,7 +574,9 @@ export const handleIconUtils = (
       normalizedY,
       setActiveObject,
       iconSymbol,
-      iconFill
+      iconFill,
+      addToHistory,
+      setObjectMoved
     );
   }
 };
@@ -522,7 +588,9 @@ function addicon(
   normalizedY: any,
   setActiveObject: any,
   iconSymbol: string,
-  iconFill: string
+  iconFill: string,
+  addToHistory: any,
+  setObjectMoved: any
 ) {
   try {
     // Register custom icons (if needed)
@@ -546,17 +614,31 @@ function addicon(
     .then((objectProps: any) => {
       console.info(objectProps);
       setActiveObject(objectProps); // Set the newly added icon object as active
+      editorInstance.setObjectProperties(objectProps.id, {
+        fill: iconFill,
+        left: normalizedX,
+        top: normalizedY,
+      });
     })
     .catch((err: Error) => {
       console.error("Error Icon canvas:", err);
     });
+
+  editorInstance.on("objectMoved", function (props: any) {
+    setObjectMoved("Icon (Change)",props);
+  });
+  editorInstance.on("objectScaled", function (props: any) {
+    setObjectMoved("Icon(Change)",props);
+  });
+  addToHistory("Icon");
 }
 
 // Utility function to handle changes in icon color style on the editor instance
 export const handleChangeIconColorStyleUtils = (
   editorInstanceRef: any,
   activeObject: any,
-  iconFill: string
+  iconFill: string,
+  addToHistory: any
 ) => {
   const editorInstance = editorInstanceRef.current;
   try {
@@ -564,6 +646,7 @@ export const handleChangeIconColorStyleUtils = (
       let id: any = activeObject.id;
       // Change icon color style using the editor instance
       editorInstance.changeIconColor(id, iconFill);
+      addToHistory("Icon (Change)");
     }
   } catch (err) {
     console.error(err);
@@ -575,7 +658,8 @@ export const applyOrRemoveFilterUtils = (
   editorInstanceRef: any,
   applying: boolean | number | string,
   type: string,
-  options: any
+  options: any,
+  addToHistory: any
 ) => {
   const editorInstance = editorInstanceRef.current;
   if (applying) {
@@ -588,6 +672,7 @@ export const applyOrRemoveFilterUtils = (
       .catch((message: any) => {
         console.error("error: ", message);
       });
+    addToHistory(`Filter (${type})`);
   } else {
     // Remove filter from the editor instance
     editorInstance.removeFilter(type);
